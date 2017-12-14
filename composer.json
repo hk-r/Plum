@@ -1,0 +1,32 @@
+{
+    "name": "hk-r/app-plum",
+    "description": "開発中のウェブプロジェクトのプレビュー環境へのデプロイツールです。",
+    "keywords": ["pickles2"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kyota Hiyoshi",
+            "email": "hiyoshi-kyota@imjp.co.jp"
+        }
+    ],
+    "scripts":{
+        "test": [
+            
+        ]
+    } ,
+    "require": {
+        "php": ">=5.4.0",
+    },
+    "require-dev": {
+        
+    },
+    "autoload": {
+        
+    },
+    "extra": {
+        "px2package": {
+            "name": "app-plum",
+            "type": "project"
+        }
+    }
+}
