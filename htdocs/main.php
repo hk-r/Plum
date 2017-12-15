@@ -1,18 +1,40 @@
 <?php
 
 //require_once("./../htdocs/.px_execute.php");
-require_once("./../php/Git.php");
+require_once( __DIR__ . "./../php/Git.php");
+require_once( __DIR__ . "./../php/Deploy.php");
 
-$conf = include( './../config/config.php' );
+/** 設定情報の取得 **/
+$conf = include( __DIR__ . './../config/config.php' );
 $conf = json_decode( json_encode( $conf ) );
 
+/** Gitリポジトリ取得 **/
 $git = new Plum_Git(
 	array(
 		'path'=>$conf->git->repository
 	)
 );
-	
 $branch_list = $git->get_branch_list();
+
+/** デプロイ実行処理 **/
+if (isset($_POST["reflect"])) {
+	$reflect = htmlspecialchars($_POST["reflect"], ENT_QUOTES, "UTF-8");
+	
+	// Deploy
+	$deploy = new Plum_Deploy(
+		array(
+			// オプション
+		)
+	);
+
+	$ret = $deploy->set_deploy(
+		'preview1'
+	);
+
+	echo '<script type="text/javascript">alert("deploy done");</script>';
+}
+
+
 
 ?>
 
@@ -38,20 +60,21 @@ $branch_list = $git->get_branch_list();
 		</nav>
 
 		<div class="container">
-			<table class="table table-bordered">
-				<thead>
-					<tr>
-						<th>server</th>
-						<th>状態</th>
-						<th>branch</th>
-						<th>反映</th>
-					</tr>
-			    </thead>
-			    <tbody>
+			<form method="POST" action="">
+				<table class="table table-bordered">
+					<thead>
+						<tr>
+							<th>server</th>
+							<th>状態</th>
+							<th>branch</th>
+							<th>反映</th>
+						</tr>
+					</thead>
+					<tbody>
 <?php foreach( $conf->preview_server as $prev_row ){ ?>
 <tr>
 <th scope="row"><?=htmlspecialchars($prev_row->name) ?></th>
-<td><button type="button" class="btn btn-default">状態</button></td>
+<td><button type="submit" class="btn btn-default" value="状態" name="state">状態</button></td>
 <td>
 <select class="form-control">
 <?php foreach( $branch_list as $branch ){ ?>
@@ -59,11 +82,12 @@ $branch_list = $git->get_branch_list();
 <?php } ?>
 </select>
 </td>
-<td><button type="button" class="btn btn-default">反映</button></td>
+<td><button type="submit" class="btn btn-default" value="反映" name="reflect">反映</button></td>
 </tr>
 <?php } ?>
-				</tbody>
-			</table>
+					</tbody>
+				</table>
+			</form>
 		</div>
 	</body>
 </html>
