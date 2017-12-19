@@ -27,8 +27,8 @@ class Plum_Git
 	 */
 	public function get_branch_list() {
 		
-		chdir($this->options["path"]);
-		exec('git branch', $output);
+		chdir( $this->options["path"] );
+		exec( 'git branch', $output );
 
 		return $output;
 	}
