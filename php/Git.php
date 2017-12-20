@@ -25,12 +25,51 @@ class Plum_Git
 	/**
 	 * ブランチリストを取得する
 	 */
-	public function get_branch_list() {
+	public function get_parent_branch_list() {
 		
+		$output_array = array();
+
 		chdir( $this->options["path"] );
-		exec( 'git branch', $output );
+		exec( 'git branch -r', $output );
+
+		foreach ($output as $key => $value) {
+			if( strpos($value, '/HEAD') !== false ){
+				continue;
+			}
+			$output_array[] = trim($value);
+		}
+
+		return $output_array;
+	}
+
+	/**
+	 * リポジトリの状態を取得する
+	 */
+	public function get_child_repo_status() {
+		
+		
 
 		return $output;
+	}
+
+	/**
+	 * 現在のブランチを取得する
+	 */
+	public function get_child_current_branch($path) {
+
+		$output = "";
+		$ret = "";
+		
+		// ディレクトリ移動
+		chdir( __DIR__ );
+		chdir( $path );
+
+		exec( 'git branch --contains', $output );
+
+		$ret = str_replace("* ", "", $output[0]);
+		$ret = trim($ret);
+
+		return $ret;
 	}
 
 

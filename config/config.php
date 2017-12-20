@@ -15,15 +15,15 @@ return call_user_func (function(){
     $conf->preview_server = array(
 		array(
 			'name'=>'preview1',
-			'path'=>'./../../preview1'
+			'path'=>'./../../deploy/preview1'
 		),
 		array(
 			'name'=>'preview2',
-			'path'=>'./../../preview2'
+			'path'=>'./../../deploy/preview2'
 		),
 		array(
 			'name'=>'preview3',
-			'path'=>'./../../preview3'
+			'path'=>'./../../deploy/preview3'
 		),
 	);
 

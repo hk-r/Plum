@@ -76,6 +76,13 @@ class Plum_Deploy
 
 					}
 					
+					// git fetch
+					if ( !exec( 'git fetch origin', $output) ) {
+
+						// ** TODO ： エラー処理 ** //
+
+					}
+
 					// git pull
 					if ( !exec( 'git pull origin master', $output) ) {
 
@@ -90,27 +97,46 @@ class Plum_Deploy
 	/**
 	 * デプロイする
 	 */
-	public function set_deploy($server_name) {
+	public function set_deploy($preview_server_name, $to_branch) {
 
 		$output = "";
 
 		foreach ( $this->conf->preview_server as $preview_server ) {
 
-			if ( $preview_server->name == $server_name ) {
+			if ( $preview_server->name == $preview_server_name ) {
 
 				// ディレクトリ移動
 				chdir( __DIR__ );
 				chdir( $preview_server->path );
 
-				// git セットアップ
-				exec( 'git init', $output );
-				
-				// git urlのセット
-				$url = $this->conf->git->protocol . "://" . $this->conf->git->url;
-				exec( 'git remote add origin ' . $url, $output );
-				
+				// 現在のブランチ取得
+				$to_branch_rep = str_replace("origin/", "", $to_branch);
+				if ( !exec( 'git branch --contains', $output) ) {
+
+					// ** TODO ： エラー処理 ** //
+
+				}
+
+				var_dump($output);
+
+				$now_branch = str_replace("* ", "", $output);
+
+				// 現在のブランチと選択されたブランチが異なる場合は、ブランチを切り替える
+				if ( $now_branch == $to_branch_rep ) {
+
+					if ( !exec( 'git checkout -b ' . $to_branch_rep, $output) ) {
+
+						// ** TODO ： エラー処理 ** //
+
+					}
+				}
+
 				// git pull
-				exec( 'git pull origin master' );
+				if ( !exec( 'git pull origin ' . $to_branch_rep ) ) {
+
+					// ** TODO ： エラー処理 ** //
+
+				}
 			}
 		}
 
