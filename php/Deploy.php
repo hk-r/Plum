@@ -69,7 +69,7 @@ class Plum_Deploy
 					}
 					
 					// git urlのセット
-					$url = $this->conf->git->protocol . "://" . $this->conf->git->url;
+					$url = $this->conf->git->protocol . "://" . urlencode($this->conf->git->username) . ":" . urlencode($this->conf->git->password) . "@" . $this->conf->git->url;
 					if ( !exec('git remote add origin ' . $url, $output) ) {
 
 						// ** TODO ： エラー処理 ** //
@@ -103,31 +103,62 @@ class Plum_Deploy
 
 		foreach ( $this->conf->preview_server as $preview_server ) {
 
-			if ( $preview_server->name == $preview_server_name ) {
+			if ( trim($preview_server->name) == trim($preview_server_name) ) {
 
 				// ディレクトリ移動
 				chdir( __DIR__ );
 				chdir( $preview_server->path );
 
 				// 現在のブランチ取得
-				$to_branch_rep = str_replace("origin/", "", $to_branch);
+				$to_branch_rep = trim(str_replace("origin/", "", $to_branch));
 				if ( !exec( 'git branch --contains', $output) ) {
 
 					// ** TODO ： エラー処理 ** //
 
 				}
 
-				var_dump($output);
+				$now_branch;
+				$already_branch_checkout = false;
+				foreach ( $output as $value ) {
+					
+					// 「*」の付いてるブランチを現在のブランチと判定
+					if ( strpos($value, '*') !== false ) {
 
-				$now_branch = str_replace("* ", "", $output);
+						$value = trim(str_replace("* ", "", $value));
+						$now_branch = $value;
+
+					} else {
+
+						$value = trim($value);
+
+					}
+
+					// 選択された(切り替える)ブランチがブランチの一覧に含まれているか判定
+					if ( $value == $to_branch_rep ) {
+						$already_branch_checkout = true;
+					}
+				}
 
 				// 現在のブランチと選択されたブランチが異なる場合は、ブランチを切り替える
-				if ( $now_branch == $to_branch_rep ) {
+				if ( $now_branch !== $to_branch_rep ) {
 
-					if ( !exec( 'git checkout -b ' . $to_branch_rep, $output) ) {
+					if ($already_branch_checkout) {
+						// 選択された(切り替える)ブランチが既にチェックアウト済みの場合
 
-						// ** TODO ： エラー処理 ** //
+						if ( !exec( 'git checkout ' . $to_branch_rep, $output) ) {
 
+							// ** TODO ： エラー処理 ** //
+
+						}
+
+					} else {
+						// 選択された(切り替える)ブランチがまだチェックアウトされてない場合
+
+						if ( !exec( 'git checkout -b ' . $to_branch_rep, $output) ) {
+
+							// ** TODO ： エラー処理 ** //
+
+						}
 					}
 				}
 

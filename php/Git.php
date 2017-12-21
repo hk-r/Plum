@@ -66,7 +66,16 @@ class Plum_Git
 
 		exec( 'git branch --contains', $output );
 
-		$ret = str_replace("* ", "", $output[0]);
+		$now_branch;
+		foreach ( $output as $value ) {
+			// 「*」の付いてるブランチを現在のブランチと判定
+			if ( strpos($value, '*') !== false ) {
+				$value = str_replace("* ", "", $value);
+				$now_branch = $value;
+			}
+		}
+
+		$ret = str_replace("* ", "", $now_branch);
 		$ret = trim($ret);
 
 		return $ret;
