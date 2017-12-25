@@ -31,7 +31,7 @@ return call_user_func (function(){
 	$conf->git = new stdClass;
 
 	// リポジトリのパス
-	$conf->git->repository = "./../../../../work/pickles2/px2-extract-ogp";
+	$conf->git->repository = "./../../../../work/pickles2/Plum/px2-sample-project";
 
 	// プロトコル
 	// https/git
@@ -41,7 +41,7 @@ return call_user_func (function(){
 	$conf->git->host="github.com";
 
 	// url
-	$conf->git->url="github.com/hk-r/px2-extract-ogp.git";
+	$conf->git->url="github.com/hk-r/px2-sample-project.git";
 
 	// ユーザ名
 	$conf->git->username="hoge";
