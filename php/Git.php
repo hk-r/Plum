@@ -30,7 +30,19 @@ class Plum_Git
 		$output_array = array();
 
 		chdir( $this->options["path"] );
-		exec( 'git branch -r', $output );
+
+		// fetch
+		if ( !exec( 'git fetch', $output ) ) {
+
+			// ** TODO ： エラー処理 ** //
+
+		}
+		// ブランチの一覧取得
+		if ( !exec( 'git branch -r', $output ) ) {
+
+			// ** TODO ： エラー処理 ** //
+
+		}
 
 		foreach ($output as $key => $value) {
 			if( strpos($value, '/HEAD') !== false ){
