@@ -111,7 +111,7 @@ class Plum_Deploy
 
 				// 現在のブランチ取得
 				$to_branch_rep = trim(str_replace("origin/", "", $to_branch));
-				if ( !exec( 'git branch --contains', $output) ) {
+				if ( !exec( 'git branch', $output) ) {
 
 					// ** TODO ： エラー処理 ** //
 
