@@ -1,4 +1,5 @@
 <?php
+ini_set('display_errors', 0);
 
 //require_once("./../htdocs/.px_execute.php");
 require_once( __DIR__ . "./../php/Git.php");
@@ -14,7 +15,9 @@ $git = new Plum_Git(
 		'path'=>$conf->git->repository
 	)
 );
-$branch_list = $git->get_parent_branch_list();
+$ret = json_decode($git->get_parent_branch_list());
+$branch_list = array();
+$branch_list = $ret->branch_list;
 
 /** イニシャライズ処理 **/
 if ( isset($_POST["initialize"]) ) {
@@ -26,15 +29,20 @@ if ( isset($_POST["initialize"]) ) {
 		)
 	);
 
-	// プレビューサーバの数分の初期化処理
-	foreach ($conf->preview_server as $value) {
-		$ret = $deploy->init(
-			$conf->git->repository,
-			$value->path
-		);
+	// プレビューサーバの初期化処理
+	$ret = $deploy->init();
+	$ret = json_decode($ret);
+
+	if ( $ret->status ) {
+		echo '<script type="text/javascript">alert("initialize done");</script>';
+	} else {
+		// エラー処理
+		echo '
+			<script type="text/javascript">
+				console.error("' . $ret->message . '");
+				alert("initialize faild");
+			</script>';
 	}
-	
-	echo '<script type="text/javascript">alert("initialize done");</script>';
 }
 
 /** デプロイ実行処理 **/
@@ -54,8 +62,18 @@ if ( isset($_POST["reflect"]) ) {
 		$preview,
 		$select_branch
 	);
+	$ret = json_decode($ret);
 
-	echo '<script type="text/javascript">alert("deploy done");</script>';
+	if ( $ret->status ) {
+		echo '<script type="text/javascript">alert("deploy done");</script>';
+	} else {
+		// エラー処理
+		echo '
+			<script type="text/javascript">
+				console.error("' . $ret->message . '");
+				alert("deploy faild");
+			</script>';
+	}
 }
 ?>
 
@@ -99,6 +117,7 @@ if ( isset($_POST["reflect"]) ) {
 						<th>状態</th>
 						<th>branch</th>
 						<th>反映</th>
+						<th>プレビュー</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -109,7 +128,8 @@ if ( isset($_POST["reflect"]) ) {
 <td>
 <select id="branch_list_<?=htmlspecialchars($prev_row->name) ?>" class="form-control" name="branch_form_list">
 <?php foreach( $branch_list as $branch ){ ?>
-<?php if(str_replace("origin/", "", $branch) == $git->get_child_current_branch($prev_row->path)) { ?>
+<?php $current_branch = json_decode($git->get_child_current_branch($prev_row->path)); ?>
+<?php if(str_replace("origin/", "", $branch) == $current_branch->current_branch) { ?>
 <option value="<?=htmlspecialchars($branch) ?>" selected><?=htmlspecialchars($branch) ?></option>
 <?php } else { ?>
 <option value="<?=htmlspecialchars($branch) ?>"><?=htmlspecialchars($branch) ?></option>
@@ -118,6 +138,7 @@ if ( isset($_POST["reflect"]) ) {
 </select>
 </td>
 <td><button type="button" id="reflect_<?=htmlspecialchars($prev_row->name) ?>" class="reflect btn btn-default" value="反映" name="reflect">反映</button></td>
+<td><a href="<?=htmlspecialchars($prev_row->url) ?>" class="btn btn-default" target="_blank">プレビュー</a></td>
 </tr>
 <?php } ?>
 				</tbody>

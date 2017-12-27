@@ -2,9 +2,6 @@
 
 class Plum_Deploy
 {
-	private $dep;
-	private $path;
-	private $dist_list;
 	private $options;
 	private $conf;
 
@@ -30,68 +27,76 @@ class Plum_Deploy
 	 * initialize処理
 	 * デプロイ先として指定されたフォルダの初期化処理。
 	 * gitのリポジトリを設定する。
-	 * @param $repository_url = リポジトリのURL
-	 * @param $dist_path = デプロイ先のパス
 	 */
-	public function init($repository_url, $dist_path) {
+	public function init() {
 
 		$output = "";
+		$result = array('status' => true,
+						'message' => '');
 
-		if ( strlen($dist_path) ) {
+		foreach ( $this->conf->preview_server as $preview_server ) {
 
-			// デプロイ先のディレクトリが無い場合は作成
-			if ( !file_exists( __DIR__ . $dist_path) ) {
-				// 存在しない場合
+			try {
 
-				// ディレクトリ作成
-				if ( !mkdir( __DIR__ . $dist_path, 0777) ) {
-					// ディレクトリが作成できない場合
+				if ( strlen($preview_server->path) ) {
 
-					// ** TODO ： エラー処理 ** //
+					// デプロイ先のディレクトリが無い場合は作成
+					if ( !file_exists( __DIR__ . $preview_server->path) ) {
+						// 存在しない場合
 
-				}
-			}
-			
-			// 「.git」フォルダが存在すれば初期化済みと判定
-			if ( !file_exists( __DIR__ . $dist_path . "/.git") ) {
-				// 存在しない場合
-				
-				chdir( __DIR__ );
+						// ディレクトリ作成
+						if ( !mkdir( __DIR__ . $preview_server->path, 0777) ) {
+							// ディレクトリが作成できない場合
 
-				// ディレクトリ移動
-				if ( chdir( $dist_path ) ) {
-
-					// git セットアップ
-					if ( !exec('git init', $output) ) {
-
-						// ** TODO ： エラー処理 ** //
-
+							// エラー処理
+							throw new Exception('Creation of preview server directory failed.');
+						}
 					}
 					
-					// git urlのセット
-					$url = $this->conf->git->protocol . "://" . urlencode($this->conf->git->username) . ":" . urlencode($this->conf->git->password) . "@" . $this->conf->git->url;
-					if ( !exec('git remote add origin ' . $url, $output) ) {
+					// 「.git」フォルダが存在すれば初期化済みと判定
+					if ( !file_exists( __DIR__ . $preview_server->path . "/.git") ) {
+						// 存在しない場合
+						
+						chdir( __DIR__ );
 
-						// ** TODO ： エラー処理 ** //
+						// ディレクトリ移動
+						if ( chdir( $preview_server->path ) ) {
 
-					}
-					
-					// git fetch
-					if ( !exec( 'git fetch origin', $output) ) {
+							// git セットアップ
+							exec('git init', $output);
+							
+							// git urlのセット
+							$url = $this->conf->git->protocol . "://" . urlencode($this->conf->git->username) . ":" . urlencode($this->conf->git->password) . "@" . $this->conf->git->url;
+							exec('git remote add origin ' . $url, $output);
 
-						// ** TODO ： エラー処理 ** //
+							// git fetch
+							exec( 'git fetch origin', $output);
 
-					}
+							// git pull
+							exec( 'git pull origin master', $output);
 
-					// git pull
-					if ( !exec( 'git pull origin master', $output) ) {
-
-						// ** TODO ： エラー処理 ** //
-
+						} else {
+							// プレビューサーバのディレクトリが存在しない場合
+							
+							// エラー処理
+							throw new Exception('Preview server directory not found.');
+						}
 					}
 				}
+
+			} catch (Exception $e) {
+
+				$result['status'] = false;
+				$result['message'] = $e->getMessage();
+
+				return json_encode($result);
 			}
-		}		
+
+		}
+		
+		$result['status'] = true;
+
+		return json_encode($result);
 	}
 
 	/**
@@ -100,78 +105,88 @@ class Plum_Deploy
 	public function set_deploy($preview_server_name, $to_branch) {
 
 		$output = "";
+		$result = array('status' => true,
+						'message' => '');
 
 		foreach ( $this->conf->preview_server as $preview_server ) {
 
-			if ( trim($preview_server->name) == trim($preview_server_name) ) {
+			try {
+				
+				if ( trim($preview_server->name) == trim($preview_server_name) ) {
 
-				// ディレクトリ移動
-				chdir( __DIR__ );
-				chdir( $preview_server->path );
+					$to_branch_rep = trim(str_replace("origin/", "", $to_branch));
 
-				// 現在のブランチ取得
-				$to_branch_rep = trim(str_replace("origin/", "", $to_branch));
-				if ( !exec( 'git branch', $output) ) {
+					// ディレクトリ移動
+					chdir( __DIR__ );
 
-					// ** TODO ： エラー処理 ** //
-
-				}
-
-				$now_branch;
-				$already_branch_checkout = false;
-				foreach ( $output as $value ) {
+					// ディレクトリ移動
+					if ( chdir( $preview_server->path ) ) {
 					
-					// 「*」の付いてるブランチを現在のブランチと判定
-					if ( strpos($value, '*') !== false ) {
+						// 現在のブランチ取得
+						exec( 'git branch', $output);
 
-						$value = trim(str_replace("* ", "", $value));
-						$now_branch = $value;
+						$now_branch;
+						$already_branch_checkout = false;
+						foreach ( $output as $value ) {
+							
+							// 「*」の付いてるブランチを現在のブランチと判定
+							if ( strpos($value, '*') !== false ) {
 
-					} else {
+								$value = trim(str_replace("* ", "", $value));
+								$now_branch = $value;
 
-						$value = trim($value);
+							} else {
 
-					}
+								$value = trim($value);
 
-					// 選択された(切り替える)ブランチがブランチの一覧に含まれているか判定
-					if ( $value == $to_branch_rep ) {
-						$already_branch_checkout = true;
-					}
-				}
+							}
 
-				// 現在のブランチと選択されたブランチが異なる場合は、ブランチを切り替える
-				if ( $now_branch !== $to_branch_rep ) {
-
-					if ($already_branch_checkout) {
-						// 選択された(切り替える)ブランチが既にチェックアウト済みの場合
-
-						if ( !exec( 'git checkout ' . $to_branch_rep, $output) ) {
-
-							// ** TODO ： エラー処理 ** //
-
+							// 選択された(切り替える)ブランチがブランチの一覧に含まれているか判定
+							if ( $value == $to_branch_rep ) {
+								$already_branch_checkout = true;
+							}
 						}
 
-					} else {
-						// 選択された(切り替える)ブランチがまだチェックアウトされてない場合
+						// 現在のブランチと選択されたブランチが異なる場合は、ブランチを切り替える
+						if ( $now_branch !== $to_branch_rep ) {
 
-						if ( !exec( 'git checkout -b ' . $to_branch_rep, $output) ) {
+							if ($already_branch_checkout) {
+								// 選択された(切り替える)ブランチが既にチェックアウト済みの場合
 
-							// ** TODO ： エラー処理 ** //
+								exec( 'git checkout ' . $to_branch_rep, $output);
 
+							} else {
+								// 選択された(切り替える)ブランチがまだチェックアウトされてない場合
+
+								exec( 'git checkout -b ' . $to_branch_rep, $output);
+							}
 						}
+
+						// git pull
+						exec( 'git pull origin ' . $to_branch_rep );
+
+					} else {
+						// プレビューサーバのディレクトリが存在しない場合
+							
+						// エラー処理
+						throw new Exception('Preview server directory not found.');
 					}
-				}
-
-				// git pull
-				if ( !exec( 'git pull origin ' . $to_branch_rep ) ) {
-
-					// ** TODO ： エラー処理 ** //
 
 				}
+
+			} catch (Exception $e) {
+
+				$result['status'] = false;
+				$result['message'] = $e->getMessage();
+
+				return json_encode($result);
 			}
+
 		}
 
-		return $output;
+		$result['status'] = true;
+
+		return json_encode($result);
 	}
 
 	/**

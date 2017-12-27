@@ -1,10 +1,7 @@
 <?php
 
 class Plum_Git
-{
-	private $gt;
-	private $path;
-	private $list;
+{	
 	private $options;
 
 	/**
@@ -28,30 +25,49 @@ class Plum_Git
 	public function get_parent_branch_list() {
 		
 		$output_array = array();
+		$result = array('status' => true,
+						'message' => '');
 
-		chdir( $this->options["path"] );
+		try {
 
-		// fetch
-		if ( !exec( 'git fetch', $output ) ) {
+			// ディレクトリ移動
+			chdir( __DIR__ );
 
-			// ** TODO ： エラー処理 ** //
+			if ( chdir( $this->options["path"] )) {
+			
+				// fetch
+				exec( 'git fetch', $output );
 
-		}
-		// ブランチの一覧取得
-		if ( !exec( 'git branch -r', $output ) ) {
+				// ブランチの一覧取得
+				exec( 'git branch -r', $output );
 
-			// ** TODO ： エラー処理 ** //
+				foreach ($output as $key => $value) {
+					if( strpos($value, '/HEAD') !== false ){
+						continue;
+					}
+					$output_array[] = trim($value);
+				}
 
-		}
+				$result['branch_list'] = $output_array;
 
-		foreach ($output as $key => $value) {
-			if( strpos($value, '/HEAD') !== false ){
-				continue;
+			} else {
+				// プレビューサーバのディレクトリが存在しない場合
+							
+				// エラー処理
+				throw new Exception('Preview server directory not found.');
 			}
-			$output_array[] = trim($value);
-		}
 
-		return $output_array;
+		} catch (Exception $e) {
+
+			$result['status'] = false;
+			$result['message'] = $e->getMessage();
+
+			return json_encode($result);
+		}
+		
+		$result['status'] = true;
+
+		return json_encode($result);
 	}
 
 	/**
@@ -60,8 +76,6 @@ class Plum_Git
 	public function get_child_repo_status() {
 		
 		
-
-		return $output;
 	}
 
 	/**
@@ -70,28 +84,48 @@ class Plum_Git
 	public function get_child_current_branch($path) {
 
 		$output = "";
-		$ret = "";
+		$result = array('status' => true,
+						'message' => '');
 		
-		// ディレクトリ移動
-		chdir( __DIR__ );
-		chdir( $path );
+		try {
 
-		exec( 'git branch --contains', $output );
+			// ディレクトリ移動
+			chdir( __DIR__ );
 
-		$now_branch;
-		foreach ( $output as $value ) {
-			// 「*」の付いてるブランチを現在のブランチと判定
-			if ( strpos($value, '*') !== false ) {
-				$value = str_replace("* ", "", $value);
-				$now_branch = $value;
+			if ( chdir( $path ) ) {
+
+				// ブランチ一覧取得
+				exec( 'git branch', $output );
+
+				$now_branch;
+				foreach ( $output as $value ) {
+					// 「*」の付いてるブランチを現在のブランチと判定
+					if ( strpos($value, '*') !== false ) {
+						$value = str_replace("* ", "", $value);
+						$now_branch = $value;
+					}
+				}
+
+				$ret = str_replace("* ", "", $now_branch);
+				$result['current_branch'] = trim($ret);
+
+			} else {
+				// プレビューサーバのディレクトリが存在しない場合
+							
+				// エラー処理
+				throw new Exception('Preview server directory not found.');
 			}
+			
+		} catch (Exception $e) {
+
+			$result['status'] = false;
+			$result['message'] = $e->getMessage();
+
+			return json_encode($result);
 		}
 
-		$ret = str_replace("* ", "", $now_branch);
-		$ret = trim($ret);
+		$result['status'] = true;
 
-		return $ret;
+		return json_encode($result);
 	}
-
-
 }
