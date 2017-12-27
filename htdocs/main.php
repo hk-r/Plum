@@ -89,6 +89,7 @@ if ( isset($_POST["reflect"]) ) {
 		<!-- BootstrapのJS読み込み -->
 		<script src="common/bootstrap/js/bootstrap.min.js"></script>
 		<script src="common/scripts/common.js"></script>
+		<link href="common/styles/common.css" rel="stylesheet">
 	</head>
 	<body>
 		<nav class="navbar navbar-default">
@@ -100,9 +101,9 @@ if ( isset($_POST["reflect"]) ) {
 					<ul class="nav navbar-nav navbar-right">
 						<!-- Nav ドロップダウン -->
 						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Nav <span class="caret"></span></a>
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <span class="caret"></span></a>
 							<ul class="dropdown-menu">
-								<li><a id="init_btn">Initialize</a></li>
+								<li><a id="init_btn" style="cursor:pointer;">Initialize</a></li>
 							</ul>
 						</li>
 					</ul>
@@ -123,8 +124,8 @@ if ( isset($_POST["reflect"]) ) {
 				<tbody>
 <?php foreach( $conf->preview_server as $key => $prev_row ){ ?>
 <tr>
-<th scope="row"><?=htmlspecialchars($prev_row->name) ?></th>
-<td><button type="button" id="state_<?=htmlspecialchars($prev_row->name) ?>" class="btn btn-default" value="状態" name="state">状態</button></td>
+<td scope="row"><?=htmlspecialchars($prev_row->name) ?></td>
+<td class="p-center"><button type="button" id="state_<?=htmlspecialchars($prev_row->name) ?>" class="btn btn-default btn-block" value="状態" name="state">状態</button></td>
 <td>
 <select id="branch_list_<?=htmlspecialchars($prev_row->name) ?>" class="form-control" name="branch_form_list">
 <?php foreach( $branch_list as $branch ){ ?>
@@ -137,8 +138,8 @@ if ( isset($_POST["reflect"]) ) {
 <?php } ?>
 </select>
 </td>
-<td><button type="button" id="reflect_<?=htmlspecialchars($prev_row->name) ?>" class="reflect btn btn-default" value="反映" name="reflect">反映</button></td>
-<td><a href="<?=htmlspecialchars($prev_row->url) ?>" class="btn btn-default" target="_blank">プレビュー</a></td>
+<td class="p-center"><button type="button" id="reflect_<?=htmlspecialchars($prev_row->name) ?>" class="reflect btn btn-default btn-block" value="反映" name="reflect">反映</button></td>
+<td class="p-center"><a href="<?=htmlspecialchars($prev_row->url) ?>" class="btn btn-default btn-block" target="_blank">プレビュー</a></td>
 </tr>
 <?php } ?>
 				</tbody>

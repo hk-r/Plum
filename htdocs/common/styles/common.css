@@ -1,0 +1,16 @@
+@charset "UTF-8";
+body {
+	background-color: #fff;
+	cursor: default;
+	color: #333;
+}
+
+table th {
+	text-align: center;
+	background-color: #666;
+	color: #fff;
+}
+
+.p-center {
+	text-align: center;
+}
