@@ -160,12 +160,15 @@ class Plum_Deploy
 							} else {
 								// 選択された(切り替える)ブランチがまだチェックアウトされてない場合
 
-								exec( 'git checkout -b ' . $to_branch_rep, $output);
+								exec( 'git checkout -b ' . $to_branch_rep . ' ' . $to_branch, $output);
 							}
 						}
 
+						// git fetch
+						exec( 'git fetch origin', $output );
+
 						// git pull
-						exec( 'git pull origin ' . $to_branch_rep );
+						exec( 'git pull origin ' . $to_branch_rep, $output );
 
 					} else {
 						// プレビューサーバのディレクトリが存在しない場合
