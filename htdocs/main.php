@@ -9,37 +9,47 @@ require_once( __DIR__ . "./../php/Deploy.php");
 $conf = include( __DIR__ . './../config/config.php' );
 $conf = json_decode( json_encode( $conf ) );
 
-/** Gitリポジトリ取得 **/
+// Deploy Class
+$deploy = new Plum_Deploy(
+	array(
+		// オプション
+	)
+);
+
+// Git Class
 $git = new Plum_Git(
 	array(
 		'path'=>$conf->git->repository
 	)
 );
-$ret = json_decode($git->get_parent_branch_list());
+
+/** 初期化(Initialize)されてるか確認 **/
+$already_init_ret = $deploy->get_already_initialized();
+$already_init_ret = json_decode($already_init_ret);
+
+/** Gitリポジトリ取得 **/
+$get_branch_ret = json_decode($git->get_parent_branch_list());
 $branch_list = array();
-$branch_list = $ret->branch_list;
+$branch_list = $get_branch_ret->branch_list;
 
 /** イニシャライズ処理 **/
 if ( isset($_POST["initialize"]) ) {
 
-	// Deploy
-	$deploy = new Plum_Deploy(
-		array(
-			// オプション
-		)
-	);
-
 	// プレビューサーバの初期化処理
-	$ret = $deploy->init();
-	$ret = json_decode($ret);
+	$init_ret = $deploy->init();
+	$init_ret = json_decode($init_ret);
 
-	if ( $ret->status ) {
+	if ( $init_ret->status ) {
+		/** 初期化(Initialize)されてるか確認 **/
+		$already_init_ret = $deploy->get_already_initialized();
+		$already_init_ret = json_decode($already_init_ret);
+		
 		echo '<script type="text/javascript">alert("initialize done");</script>';
 	} else {
 		// エラー処理
 		echo '
 			<script type="text/javascript">
-				console.error("' . $ret->message . '");
+				console.error("' . $init_ret->message . '");
 				alert("initialize faild");
 			</script>';
 	}
@@ -50,27 +60,20 @@ if ( isset($_POST["reflect"]) ) {
 	$reflect = htmlspecialchars( $_POST["reflect"], ENT_QUOTES, "UTF-8" );
 	$preview = htmlspecialchars( $_POST["preview"], ENT_QUOTES, "UTF-8" );
 	$select_branch = htmlspecialchars( $_POST["select_branch"], ENT_QUOTES, "UTF-8" );
-	
-	// Deploy
-	$deploy = new Plum_Deploy(
-		array(
-			// オプション
-		)
-	);
 
-	$ret = $deploy->set_deploy(
+	$deploy_ret = $deploy->set_deploy(
 		$preview,
 		$select_branch
 	);
-	$ret = json_decode($ret);
+	$deploy_ret = json_decode($deploy_ret);
 
-	if ( $ret->status ) {
+	if ( $deploy_ret->status ) {
 		echo '<script type="text/javascript">alert("deploy done");</script>';
 	} else {
 		// エラー処理
 		echo '
 			<script type="text/javascript">
-				console.error("' . $ret->message . '");
+				console.error("' . $deploy_ret->message . '");
 				alert("deploy faild");
 			</script>';
 	}
@@ -111,6 +114,7 @@ if ( isset($_POST["reflect"]) ) {
 			</div>
 		</nav>
 		<div class="container">
+<?php if ($already_init_ret->already_init) { ?>
 			<table class="table table-bordered">
 				<thead>
 					<tr>
@@ -144,6 +148,13 @@ if ( isset($_POST["reflect"]) ) {
 <?php } ?>
 				</tbody>
 			</table>
+<?php } else { ?>
+			<div class="panel panel-warning">
+				<div class="panel-heading">
+					<p class="panel-title">Initializeを実行してください</p>
+				</div>
+			</div>
+<?php } ?>
 		</div>
 	</body>
 </html>

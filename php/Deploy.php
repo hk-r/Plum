@@ -101,6 +101,8 @@ class Plum_Deploy
 
 	/**
 	 * デプロイする
+	 * @param preview_server_name = プレビューサーバの名称
+	 * @param to_branch = 切り替えるブランチ
 	 */
 	public function set_deploy($preview_server_name, $to_branch) {
 
@@ -186,6 +188,51 @@ class Plum_Deploy
 
 		$result['status'] = true;
 
+		return json_encode($result);
+	}
+
+	/**
+	 * 初期化済みチェック
+	 */
+	public function get_already_initialized() {
+
+		$output = "";
+		$result = array('status' => true,
+						'message' => '');
+
+		foreach ( $this->conf->preview_server as $preview_server ) {
+
+			try {
+
+				if ( strlen($preview_server->path) ) {
+
+					// デプロイ先のディレクトリが無い場合は作成
+					if ( file_exists( __DIR__ . $preview_server->path) ) {
+						// 存在する場合
+
+						// 「.git」フォルダが存在すれば初期化済みと判定
+						if ( file_exists( __DIR__ . $preview_server->path . "/.git") ) {
+							// 存在する場合
+
+							$result['status'] = true;
+							$result['already_init'] = true;
+							return json_encode($result);
+						}
+					}
+				}
+
+			} catch (Exception $e) {
+
+				$result['status'] = false;
+				$result['message'] = $e->getMessage();
+
+				return json_encode($result);
+			}
+
+		}
+		
+		$result['status'] = true;
+		$result['already_init'] = false;
 		return json_encode($result);
 	}
 
