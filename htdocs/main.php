@@ -156,5 +156,10 @@ if ( isset($_POST["reflect"]) ) {
 			</div>
 <?php } ?>
 		</div>
+		<div id="loader-bg">
+			<div id="loading">
+				<img src="common/images/loader.gif">
+			</div>
+		</div>
 	</body>
 </html>

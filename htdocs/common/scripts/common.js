@@ -1,43 +1,11 @@
-var lockId = "lockId";
-
-/*
- * 画面操作を無効にする
- */
-function lockScreen(id) {
-
-    // 現在画面を覆い隠すためのDIVタグを作成する
-    var divTag = $('<div />').attr("id", id);
-
-    // スタイルを設定
-    divTag.css("z-index", "999")
-          .css("position", "absolute")
-          .css("top", "0px")
-          .css("left", "0px")
-          .css("right", "0px")
-          .css("bottom", "0px")
-          .css("opacity", "0.8");
-
-    // BODYタグに作成したDIVタグを追加
-    $('body').append(divTag);
-}
-
-/*
- * 画面操作無効を解除する
- */
-function unlockScreen(id) {
-
-    // 画面を覆っているタグを削除する
-    $("#" + id).remove();
-}
-
-
 $(function($){
 	$(window).load(function(){
 
 		$('#init_btn').on('click', function() {
 
 			// 画面ロック
-			lockScreen(lockId);
+			var h = $(window).height();
+			$('#loader-bg ,#loader').height(h).css('display','block');
 
 			var $form = $('<form>').attr({
 				action : '',
@@ -58,7 +26,8 @@ $(function($){
 		$('.reflect').on('click', function() {
 			
 			// 画面ロック
-			lockScreen(lockId);
+			var h = $(window).height();
+			$('#loader-bg ,#loader').height(h).css('display','block');
 
 			var val = this.id;
 			var preview = val.replace('reflect_', '');
