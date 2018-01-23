@@ -35,7 +35,14 @@ class Plum_Deploy
 		$result = array('status' => true,
 						'message' => '');
 
-		foreach ( $this->conf->preview_server as $preview_server ) {
+		$server_list = $this->conf->preview_server;
+		array_push($server_list, json_decode(json_encode(array(
+			'name'=>'master',
+			'path'=>$this->conf->git->repository,
+		))));
+
+		foreach ( $server_list as $preview_server ) {
+			chdir($current_dir);
 
 			try {
 
@@ -112,7 +119,14 @@ class Plum_Deploy
 		$result = array('status' => true,
 						'message' => '');
 
-		foreach ( $this->conf->preview_server as $preview_server ) {
+		$server_list = $this->conf->preview_server;
+		array_push($server_list, json_decode(json_encode(array(
+			'name'=>'master',
+			'path'=>$this->conf->git->repository,
+		))));
+
+		foreach ( $server_list as $preview_server ) {
+			chdir($current_dir);
 
 			try {
 
@@ -203,7 +217,13 @@ class Plum_Deploy
 		$result = array('status' => true,
 						'message' => '');
 
-		foreach ( $this->conf->preview_server as $preview_server ) {
+		$server_list = $this->conf->preview_server;
+		array_push($server_list, json_decode(json_encode(array(
+			'name'=>'master',
+			'path'=>$this->conf->git->repository,
+		))));
+
+		foreach ( $server_list as $preview_server ) {
 
 			try {
 
