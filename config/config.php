@@ -11,21 +11,21 @@ return call_user_func (function(){
 	/** コピーライト表記 */
 	$conf->copyright = 'Pickles 2 Project';
 
-	/** プレビューサーバ定義 **/
+	/** プレビューサーバ定義 */
     $conf->preview_server = array(
 		array(
 			'name'=>'preview1',
-			'path'=>'./../../deploy/preview1',
+			'path'=>'./../repos/preview1/',
 			'url'=>'http://preview1.localhost/'
 		),
 		array(
 			'name'=>'preview2',
-			'path'=>'./../../deploy/preview2',
+			'path'=>'./../repos/preview2/',
 			'url'=>'http://preview2.localhost/'
 		),
 		array(
 			'name'=>'preview3',
-			'path'=>'./../../deploy/preview3',
+			'path'=>'./../repos/preview3/',
 			'url'=>'http://preview3.localhost/'
 		),
 	);
@@ -34,7 +34,7 @@ return call_user_func (function(){
 	$conf->git = new stdClass;
 
 	// リポジトリのパス
-	$conf->git->repository = "./../../../../work/pickles2/Plum/px2-sample-project";
+	$conf->git->repository = './../repos/master/';
 
 	// プロトコル
 	// https/git
@@ -54,6 +54,6 @@ return call_user_func (function(){
 
 
 
-    
+
     return $conf;
 });

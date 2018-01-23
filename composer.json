@@ -11,17 +11,17 @@
     ],
     "scripts":{
         "test": [
-            
+
         ]
     } ,
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=5.4.0"
     },
     "require-dev": {
-        
+
     },
     "autoload": {
-        
+
     },
     "extra": {
         "px2package": {
