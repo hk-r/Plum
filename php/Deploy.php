@@ -29,6 +29,7 @@ class Plum_Deploy
 	 * gitのリポジトリを設定する。
 	 */
 	public function init() {
+		$current_dir = realpath('.');
 
 		$output = "";
 		$result = array('status' => true,
@@ -41,30 +42,28 @@ class Plum_Deploy
 				if ( strlen($preview_server->path) ) {
 
 					// デプロイ先のディレクトリが無い場合は作成
-					if ( !file_exists( __DIR__ . $preview_server->path) ) {
+					if ( !file_exists( $preview_server->path) ) {
 						// 存在しない場合
 
 						// ディレクトリ作成
-						if ( !mkdir( __DIR__ . $preview_server->path, 0777) ) {
+						if ( !mkdir( $preview_server->path, 0777) ) {
 							// ディレクトリが作成できない場合
 
 							// エラー処理
 							throw new Exception('Creation of preview server directory failed.');
 						}
 					}
-					
+
 					// 「.git」フォルダが存在すれば初期化済みと判定
-					if ( !file_exists( __DIR__ . $preview_server->path . "/.git") ) {
+					if ( !file_exists( $preview_server->path . "/.git") ) {
 						// 存在しない場合
-						
-						chdir( __DIR__ );
 
 						// ディレクトリ移動
 						if ( chdir( $preview_server->path ) ) {
 
 							// git セットアップ
 							exec('git init', $output);
-							
+
 							// git urlのセット
 							$url = $this->conf->git->protocol . "://" . urlencode($this->conf->git->username) . ":" . urlencode($this->conf->git->password) . "@" . $this->conf->git->url;
 							exec('git remote add origin ' . $url, $output);
@@ -75,9 +74,10 @@ class Plum_Deploy
 							// git pull
 							exec( 'git pull origin master', $output);
 
+							chdir($current_dir);
 						} else {
 							// プレビューサーバのディレクトリが存在しない場合
-							
+
 							// エラー処理
 							throw new Exception('Preview server directory not found.');
 						}
@@ -89,11 +89,12 @@ class Plum_Deploy
 				$result['status'] = false;
 				$result['message'] = $e->getMessage();
 
+				chdir($current_dir);
 				return json_encode($result);
 			}
 
 		}
-		
+
 		$result['status'] = true;
 
 		return json_encode($result);
@@ -105,6 +106,7 @@ class Plum_Deploy
 	 * @param to_branch = 切り替えるブランチ
 	 */
 	public function set_deploy($preview_server_name, $to_branch) {
+		$current_dir = realpath('.');
 
 		$output = "";
 		$result = array('status' => true,
@@ -113,24 +115,21 @@ class Plum_Deploy
 		foreach ( $this->conf->preview_server as $preview_server ) {
 
 			try {
-				
+
 				if ( trim($preview_server->name) == trim($preview_server_name) ) {
 
 					$to_branch_rep = trim(str_replace("origin/", "", $to_branch));
 
 					// ディレクトリ移動
-					chdir( __DIR__ );
-
-					// ディレクトリ移動
 					if ( chdir( $preview_server->path ) ) {
-					
+
 						// 現在のブランチ取得
 						exec( 'git branch', $output);
 
 						$now_branch;
 						$already_branch_checkout = false;
 						foreach ( $output as $value ) {
-							
+
 							// 「*」の付いてるブランチを現在のブランチと判定
 							if ( strpos($value, '*') !== false ) {
 
@@ -172,7 +171,7 @@ class Plum_Deploy
 
 					} else {
 						// プレビューサーバのディレクトリが存在しない場合
-							
+
 						// エラー処理
 						throw new Exception('Preview server directory not found.');
 					}
@@ -184,6 +183,7 @@ class Plum_Deploy
 				$result['status'] = false;
 				$result['message'] = $e->getMessage();
 
+				chdir($current_dir);
 				return json_encode($result);
 			}
 
@@ -191,6 +191,7 @@ class Plum_Deploy
 
 		$result['status'] = true;
 
+		chdir($current_dir);
 		return json_encode($result);
 	}
 
@@ -198,7 +199,6 @@ class Plum_Deploy
 	 * 初期化済みチェック
 	 */
 	public function get_already_initialized() {
-
 		$output = "";
 		$result = array('status' => true,
 						'message' => '');
@@ -210,11 +210,11 @@ class Plum_Deploy
 				if ( strlen($preview_server->path) ) {
 
 					// デプロイ先のディレクトリが無い場合は作成
-					if ( file_exists( __DIR__ . $preview_server->path) ) {
+					if ( file_exists( $preview_server->path) ) {
 						// 存在する場合
 
 						// 「.git」フォルダが存在すれば初期化済みと判定
-						if ( file_exists( __DIR__ . $preview_server->path . "/.git") ) {
+						if ( file_exists( $preview_server->path . "/.git") ) {
 							// 存在する場合
 
 							$result['status'] = true;
@@ -233,7 +233,7 @@ class Plum_Deploy
 			}
 
 		}
-		
+
 		$result['status'] = true;
 		$result['already_init'] = false;
 		return json_encode($result);
@@ -243,15 +243,14 @@ class Plum_Deploy
 	 * config情報を取得する
 	 */
 	private function get_config() {
-		
+
 		/** 設定情報の取得 **/
-		$conf = include( __DIR__ . './../config/config.php' );
+		$conf = include( __DIR__ . '/../config/config.php' );
 		$conf = json_decode( json_encode( $conf ) );
 
 		$this->conf = $conf;
 
 		return $this->conf;
 	}
-
 
 }
