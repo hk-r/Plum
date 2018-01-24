@@ -1,7 +1,7 @@
 <?php
 
 class Plum_Git
-{	
+{
 	private $options;
 
 	/**
@@ -23,18 +23,16 @@ class Plum_Git
 	 * ブランチリストを取得する
 	 */
 	public function get_parent_branch_list() {
-		
+		$current_dir = realpath('.');
+
 		$output_array = array();
 		$result = array('status' => true,
 						'message' => '');
 
 		try {
 
-			// ディレクトリ移動
-			chdir( __DIR__ );
-
 			if ( chdir( $this->options["path"] )) {
-			
+
 				// fetch
 				exec( 'git fetch', $output );
 
@@ -52,7 +50,7 @@ class Plum_Git
 
 			} else {
 				// プレビューサーバのディレクトリが存在しない場合
-							
+
 				// エラー処理
 				throw new Exception('Preview server directory not found.');
 			}
@@ -62,11 +60,13 @@ class Plum_Git
 			$result['status'] = false;
 			$result['message'] = $e->getMessage();
 
+			chdir($current_dir);
 			return json_encode($result);
 		}
-		
+
 		$result['status'] = true;
 
+		chdir($current_dir);
 		return json_encode($result);
 	}
 
@@ -74,23 +74,21 @@ class Plum_Git
 	 * リポジトリの状態を取得する
 	 */
 	public function get_child_repo_status() {
-		
-		
+
+
 	}
 
 	/**
 	 * 現在のブランチを取得する
 	 */
 	public function get_child_current_branch($path) {
+		$current_dir = realpath('.');
 
 		$output = "";
 		$result = array('status' => true,
 						'message' => '');
-		
-		try {
 
-			// ディレクトリ移動
-			chdir( __DIR__ );
+		try {
 
 			if ( chdir( $path ) ) {
 
@@ -111,21 +109,23 @@ class Plum_Git
 
 			} else {
 				// プレビューサーバのディレクトリが存在しない場合
-							
+
 				// エラー処理
 				throw new Exception('Preview server directory not found.');
 			}
-			
+
 		} catch (Exception $e) {
 
 			$result['status'] = false;
 			$result['message'] = $e->getMessage();
 
+			chdir($current_dir);
 			return json_encode($result);
 		}
 
 		$result['status'] = true;
 
+		chdir($current_dir);
 		return json_encode($result);
 	}
 }
