@@ -19,7 +19,7 @@ return call_user_func (function(){
 	/* (中略) */
 
 	/** プレビューサーバ定義 */
-    $conf->preview_server = array(
+	$conf->preview_server = array(
 
 		// プレビューサーバの数だけ設定する
 		//
